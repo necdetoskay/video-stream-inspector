@@ -1,0 +1,17 @@
+node_modules/
+.pnpm-store/
+.next/
+dist/
+build/
+coverage/
+playwright-report/
+test-results/
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+downloads/
+artifacts/
