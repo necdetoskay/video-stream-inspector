@@ -1,5 +1,6 @@
 import { mkdir, open, unlink } from "node:fs/promises";
 import { basename, join, resolve } from "node:path";
+import { assertPublicHttpUrl } from "@vsi/network-policy";
 import { isAcquisitionPermit, type AcquisitionPermit } from "@vsi/policy";
 
 export type DirectDownloadInput = {
@@ -32,13 +33,7 @@ export async function downloadDirectFile(input: DirectDownloadInput): Promise<Di
     throw new Error("A valid acquisition permit is required");
   }
 
-  const url = new URL(input.url);
-  if (!["http:", "https:"].includes(url.protocol)) {
-    throw new Error("Only http and https downloads are supported");
-  }
-  if (url.username || url.password) {
-    throw new Error("Credential-bearing URLs are not supported");
-  }
+  const url = await assertPublicHttpUrl(input.url);
 
   const maxBytes = input.maxBytes ?? DEFAULT_MAX_BYTES;
   if (!Number.isSafeInteger(maxBytes) || maxBytes <= 0) {
