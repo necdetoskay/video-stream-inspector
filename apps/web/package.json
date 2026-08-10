@@ -10,6 +10,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@vsi/acquisition-intent": "workspace:*",
+    "@vsi/inspection-registry": "workspace:*",
     "@vsi/inspector": "workspace:*",
     "@vsi/network-policy": "workspace:*",
     "next": "16.0.0",

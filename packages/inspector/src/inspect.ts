@@ -13,6 +13,7 @@ export type MediaEvidence = {
 
 export type InspectionReport = {
   pageUrl: string;
+  finalUrl: string;
   media: MediaEvidence[];
 };
 
@@ -72,6 +73,7 @@ export async function inspectPage(
 
   try {
     await page.goto(pageUrl, { waitUntil: "networkidle" });
+    const finalUrl = page.url();
     const domUrls = await page.locator("video, audio, source").evaluateAll((nodes) =>
       nodes.flatMap((node) => {
         const element = node as HTMLMediaElement | HTMLSourceElement;
@@ -83,7 +85,11 @@ export async function inspectPage(
       }),
     );
     for (const url of domUrls) record(url, undefined, "dom");
-    return { pageUrl, media: [...found.values()].sort((a, b) => a.url.localeCompare(b.url)) };
+    return {
+      pageUrl,
+      finalUrl,
+      media: [...found.values()].sort((a, b) => a.url.localeCompare(b.url)),
+    };
   } finally {
     await context.close();
     if (!options.browser) await ownedBrowser.close();
