@@ -19,7 +19,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Only http and https URLs are supported" }, { status: 400 });
     }
 
-    const report = await inspectPage(parsed.toString(), { waitAfterLoadMs: 1200 });
+    const report = await inspectPage(parsed.toString());
     return NextResponse.json(report);
   } catch (cause) {
     const message = cause instanceof Error ? cause.message : "Inspection failed";
