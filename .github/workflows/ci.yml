@@ -22,6 +22,8 @@ jobs:
           node-version: 24
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
+      - name: Install Chromium
+        run: pnpm --filter @vsi/inspector exec playwright install --with-deps chromium
       - name: Typecheck
         run: pnpm typecheck
       - name: Test
