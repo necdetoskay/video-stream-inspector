@@ -1,4 +1,4 @@
-import { inspectPage } from "@vsi/browser";
+import { inspectPage } from "@vsi/inspector";
 import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
@@ -15,7 +15,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid URL" }, { status: 400 });
     }
 
-    if (!['http:', 'https:'].includes(parsed.protocol)) {
+    if (!["http:", "https:"].includes(parsed.protocol)) {
       return NextResponse.json({ error: "Only http and https URLs are supported" }, { status: 400 });
     }
 
