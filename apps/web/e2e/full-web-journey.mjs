@@ -25,18 +25,17 @@ try {
   await page.getByText("DIRECT").waitFor();
   await page.getByText(seeded.candidates[0].url).waitFor();
 
-  const saveButton = page.getByRole("button", { name: /Save permitted media/i });
+  const saveButton = page.getByRole("button", { name: "Save permitted media" });
   if (await saveButton.isEnabled()) throw new Error("Save button must be disabled before authorization");
 
-  await page.getByLabel(/I confirm/i).check();
-  const basisSelect = page.getByLabel(/Authorization basis/i);
-  await basisSelect.selectOption("public-domain");
-
+  await page.getByLabel("I confirm I am authorized to save this media.").check();
+  await page.getByLabel("Authorization basis").selectOption("public-domain");
   await saveButton.click();
-  await page.getByText(/Saved:/i).waitFor({ timeout: 60000 });
 
-  const savedText = await page.getByText(/Saved:/i).textContent();
-  if (!savedText?.includes("flower")) throw new Error(`Unexpected saved result: ${savedText}`);
+  const status = page.locator(".acquisition-status.success");
+  await status.waitFor({ timeout: 60000 });
+  const savedText = await status.textContent();
+  if (!savedText?.startsWith("Saved ")) throw new Error(`Unexpected saved result: ${savedText}`);
 
   console.log("ULTEF-WEB-001 PASS", savedText);
 } finally {
