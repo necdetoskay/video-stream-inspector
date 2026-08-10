@@ -27,12 +27,25 @@ export async function POST(request: Request) {
     const record = inspectionRegistry.register({
       pageUrl: report.pageUrl,
       finalUrl: report.finalUrl,
-      candidates: report.candidates
-        .filter((candidate) => candidate.kind !== "unknown")
-        .map((candidate) => ({ url: candidate.url, kind: candidate.kind })),
+      candidates: report.media.map((candidate) => ({ url: candidate.url, kind: candidate.kind })),
     });
 
-    return NextResponse.json({ ...report, inspectionId: record.id, inspectionExpiresAt: record.expiresAt });
+    const candidates = report.media.map((candidate) => ({
+      url: candidate.url,
+      kind: candidate.kind,
+      mimeType: candidate.mimeTypes[0],
+      sources: candidate.sources,
+      confidence: candidate.confidence,
+      reasons: candidate.reasons,
+    }));
+
+    return NextResponse.json({
+      pageUrl: report.pageUrl,
+      finalUrl: report.finalUrl,
+      candidates,
+      inspectionId: record.id,
+      inspectionExpiresAt: record.expiresAt,
+    });
   } catch (cause) {
     const message = cause instanceof Error ? cause.message : "Inspection failed";
     return NextResponse.json({ error: message }, { status: 500 });
