@@ -1,0 +1,14 @@
+services:
+  video-stream-inspector:
+    build:
+      context: .
+    ports:
+      - "3000:3000"
+    environment:
+      VSI_DOWNLOAD_DIR: /data/downloads
+    volumes:
+      - vsi-downloads:/data/downloads
+    restart: unless-stopped
+
+volumes:
+  vsi-downloads:
