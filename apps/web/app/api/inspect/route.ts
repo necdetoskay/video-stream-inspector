@@ -1,5 +1,6 @@
 import { inspectPage } from "@vsi/inspector";
 import { createPublicNetworkGuard } from "@vsi/network-policy";
+import { emitSafeEvent, jsonConsoleSink } from "@vsi/observability";
 import { NextResponse } from "next/server";
 import { inspectionRegistry } from "../../../lib/acquisition-state";
 import { validateInspectionUrl } from "../../../lib/validate-inspection-url";
@@ -38,6 +39,12 @@ export async function POST(request: Request) {
       confidence: candidate.confidence,
       reasons: candidate.reasons,
     }));
+
+    emitSafeEvent(jsonConsoleSink, {
+      event: "inspection.completed",
+      outcome: "success",
+      candidateCount: candidates.length,
+    });
 
     return NextResponse.json({
       pageUrl: report.pageUrl,
