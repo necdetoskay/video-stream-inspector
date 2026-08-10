@@ -1,9 +1,12 @@
 {
-  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "moduleResolution": "Bundler",
+    "target": "ES2022",
     "module": "ESNext",
-    "types": ["node", "vitest/globals"]
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "noEmit": true,
+    "types": ["node", "vitest/globals"],
+    "skipLibCheck": true
   },
-  "include": ["src", "test"]
+  "include": ["src/**/*.ts", "test/**/*.ts"]
 }
