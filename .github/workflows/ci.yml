@@ -32,3 +32,21 @@ jobs:
         run: pnpm build
       - name: Build production container
         run: docker build -t video-stream-inspector:ci .
+      - name: Smoke verify production container
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run -d --name vsi-ci -p 3000:3000 video-stream-inspector:ci
+          trap 'docker logs vsi-ci || true; docker rm -f vsi-ci >/dev/null 2>&1 || true' EXIT
+
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:3000/api/readyz >/tmp/vsi-ready.json; then
+              break
+            fi
+            sleep 1
+          done
+
+          curl --fail --silent http://127.0.0.1:3000/api/healthz >/tmp/vsi-health.json
+          curl --fail --silent http://127.0.0.1:3000/api/readyz >/tmp/vsi-ready.json
+          test "$(docker exec vsi-ci id -u)" != "0"
+          docker inspect --format='{{.State.Health.Status}}' vsi-ci | grep -Eq 'healthy|starting'
