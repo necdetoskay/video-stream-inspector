@@ -1,5 +1,10 @@
-export { evaluateAcquisitionPolicy } from "./evaluate";
+export {
+  evaluateAcquisitionPolicy,
+  isAcquisitionPermit,
+  issueAcquisitionPermit,
+} from "./evaluate";
 export type {
+  AcquisitionPermit,
   AcquisitionPolicyInput,
   AuthorizationAssertion,
   AuthorizationBasis,
