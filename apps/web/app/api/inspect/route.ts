@@ -1,6 +1,7 @@
 import { inspectPage } from "@vsi/inspector";
 import { createPublicNetworkGuard } from "@vsi/network-policy";
 import { NextResponse } from "next/server";
+import { inspectionRegistry } from "../../../lib/acquisition-state";
 import { validateInspectionUrl } from "../../../lib/validate-inspection-url";
 
 export const runtime = "nodejs";
@@ -23,7 +24,15 @@ export async function POST(request: Request) {
     }
 
     const report = await inspectPage(validation.url, { requestGuard: publicNetworkGuard });
-    return NextResponse.json(report);
+    const record = inspectionRegistry.register({
+      pageUrl: report.pageUrl,
+      finalUrl: report.finalUrl,
+      candidates: report.candidates
+        .filter((candidate) => candidate.kind !== "unknown")
+        .map((candidate) => ({ url: candidate.url, kind: candidate.kind })),
+    });
+
+    return NextResponse.json({ ...report, inspectionId: record.id, inspectionExpiresAt: record.expiresAt });
   } catch (cause) {
     const message = cause instanceof Error ? cause.message : "Inspection failed";
     return NextResponse.json({ error: message }, { status: 500 });
