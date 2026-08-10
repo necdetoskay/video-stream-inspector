@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@vsi/inspector": "workspace:*",
+    "@vsi/network-policy": "workspace:*",
     "next": "16.0.0",
     "playwright": "^1.55.0",
     "playwright-core": "^1.55.0",

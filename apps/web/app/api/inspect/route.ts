@@ -1,8 +1,11 @@
 import { inspectPage } from "@vsi/inspector";
+import { createPublicNetworkGuard } from "@vsi/network-policy";
 import { NextResponse } from "next/server";
 import { validateInspectionUrl } from "../../../lib/validate-inspection-url";
 
 export const runtime = "nodejs";
+
+const publicNetworkGuard = createPublicNetworkGuard();
 
 export async function POST(request: Request) {
   try {
@@ -12,7 +15,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: validation.error }, { status: 400 });
     }
 
-    const report = await inspectPage(validation.url);
+    try {
+      await publicNetworkGuard(validation.url);
+    } catch (cause) {
+      const message = cause instanceof Error ? cause.message : "Network target is not allowed";
+      return NextResponse.json({ error: message }, { status: 400 });
+    }
+
+    const report = await inspectPage(validation.url, { requestGuard: publicNetworkGuard });
     return NextResponse.json(report);
   } catch (cause) {
     const message = cause instanceof Error ? cause.message : "Inspection failed";
