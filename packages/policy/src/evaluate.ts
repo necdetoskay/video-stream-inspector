@@ -29,6 +29,13 @@ export type PolicyDecision = {
   reasons: string[];
 };
 
+const acquisitionPermitBrand: unique symbol = Symbol("vsi.acquisition-permit");
+
+export type AcquisitionPermit = Readonly<{
+  decisionCode: "allow-explicit-authorization";
+  [acquisitionPermitBrand]: true;
+}>;
+
 export function evaluateAcquisitionPolicy(input: AcquisitionPolicyInput): PolicyDecision {
   if (!input.authorization.authorized) {
     return {
@@ -56,4 +63,26 @@ export function evaluateAcquisitionPolicy(input: AcquisitionPolicyInput): Policy
       "no-protection-signals-observed",
     ],
   };
+}
+
+export function issueAcquisitionPermit(input: AcquisitionPolicyInput): {
+  decision: PolicyDecision;
+  permit: AcquisitionPermit | null;
+} {
+  const decision = evaluateAcquisitionPolicy(input);
+  if (!decision.allowed || decision.code !== "allow-explicit-authorization") {
+    return { decision, permit: null };
+  }
+
+  const permit = Object.freeze({
+    decisionCode: decision.code,
+    [acquisitionPermitBrand]: true as const,
+  }) as AcquisitionPermit;
+
+  return { decision, permit };
+}
+
+export function isAcquisitionPermit(value: unknown): value is AcquisitionPermit {
+  if (typeof value !== "object" || value === null) return false;
+  return (value as Record<PropertyKey, unknown>)[acquisitionPermitBrand] === true;
 }
