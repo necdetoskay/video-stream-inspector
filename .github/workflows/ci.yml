@@ -50,3 +50,29 @@ jobs:
           curl --fail --silent http://127.0.0.1:3000/api/readyz >/tmp/vsi-ready.json
           test "$(docker exec vsi-ci id -u)" != "0"
           docker inspect --format='{{.State.Health.Status}}' vsi-ci | grep -Eq 'healthy|starting'
+      - name: Full web E2E acquisition journey
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/vsi-e2e-downloads
+          mkdir -p /tmp/vsi-e2e-downloads
+          chmod 0777 /tmp/vsi-e2e-downloads
+
+          docker run -d \
+            --name vsi-e2e \
+            -p 3001:3000 \
+            -e VSI_E2E_FIXTURE_MODE=1 \
+            -v /tmp/vsi-e2e-downloads:/data/downloads \
+            video-stream-inspector:ci
+          trap 'docker logs vsi-e2e || true; docker rm -f vsi-e2e >/dev/null 2>&1 || true' EXIT
+
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:3001/api/readyz >/dev/null; then
+              break
+            fi
+            sleep 1
+          done
+
+          VSI_E2E_BASE_URL=http://127.0.0.1:3001 pnpm --filter @vsi/web exec node e2e/full-web-journey.mjs
+          test "$(find /tmp/vsi-e2e-downloads -maxdepth 1 -type f | wc -l)" -eq 1
+          test -s "$(find /tmp/vsi-e2e-downloads -maxdepth 1 -type f -print -quit)"
